@@ -5,14 +5,13 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Navbar from './components/Navbar/Navbar'
 import './index.css'
 
-// Lazy load all pages — they only download when the user visits them
 const Home = lazy(() => import('./pages/Home'))
 const CartPage = lazy(() => import('./pages/CartPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
 const ProductDetail = lazy(() => import('./pages/ProductDetail'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
 
-// Simple loading spinner shown while a page is loading
 function PageLoader() {
   return (
     <div style={{ textAlign: 'center', padding: '4rem', color: '#6b7280' }}>
@@ -34,7 +33,6 @@ function App() {
         <BrowserRouter>
           <Navbar />
           <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Suspense shows PageLoader while lazy pages are downloading */}
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -46,6 +44,7 @@ function App() {
                     <CheckoutPage />
                   </ProtectedRoute>
                 } />
+                <Route path="/admin" element={<AdminPage />} />
               </Routes>
             </Suspense>
           </main>

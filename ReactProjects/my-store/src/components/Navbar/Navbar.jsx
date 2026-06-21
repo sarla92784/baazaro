@@ -5,7 +5,7 @@ import './Navbar.css'
 
 function Navbar() {
   const { cartCount } = useCart()
-  const { user, logout } = useAuth()
+  const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
 
   function handleLogout() {
@@ -27,6 +27,10 @@ function Navbar() {
             <span className="cart-badge">{cartCount}</span>
           )}
         </Link>
+
+        {user && isAdmin && isAdmin(user.email) && (
+          <Link to="/admin" className="navbar-link">Admin</Link>
+        )}
 
         {user ? (
           <>
