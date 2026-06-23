@@ -9,7 +9,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* Step indicator */
 .steps {
   display: flex;
   align-items: center;
@@ -25,9 +24,7 @@
   font-weight: 500;
 }
 
-.step.active {
-  color: #2563eb;
-}
+.step.active { color: #2563eb; }
 
 .step-circle {
   width: 28px;
@@ -54,7 +51,6 @@
   margin: 0 1rem;
 }
 
-/* Layout */
 .checkout-layout {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -112,9 +108,7 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.form-input.input-error {
-  border-color: #ef4444;
-}
+.form-input.input-error { border-color: #ef4444; }
 
 .error-msg {
   font-size: 0.78rem;
@@ -141,9 +135,7 @@
   transition: background 0.2s;
 }
 
-.next-btn:hover, .place-order-btn:hover {
-  background: #1d4ed8;
-}
+.next-btn:hover, .place-order-btn:hover { background: #1d4ed8; }
 
 .btn-row {
   display: flex;
@@ -161,8 +153,53 @@
   transition: background 0.2s;
 }
 
-.back-btn:hover {
-  background: #f3f4f6;
+.back-btn:hover { background: #f3f4f6; }
+
+/* Payment methods */
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.payment-option:hover {
+  border-color: #2563eb;
+  background: #f0f7ff;
+}
+
+.payment-option.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.payment-icon { font-size: 1.5rem; }
+
+.payment-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.payment-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.payment-radio {
+  margin-left: auto;
+  font-size: 1.1rem;
 }
 
 /* Order summary */
@@ -197,9 +234,7 @@
   padding: 2px;
 }
 
-.summary-item-info {
-  flex: 1;
-}
+.summary-item-info { flex: 1; }
 
 .summary-item-title {
   font-size: 0.8rem;
@@ -291,9 +326,7 @@
   font-size: 0.9rem;
 }
 
-.confirmation-email {
-  font-size: 0.85rem;
-}
+.confirmation-email { font-size: 0.85rem; }
 
 .back-home-btn {
   margin-top: 1.5rem;
@@ -308,6 +341,4 @@
   transition: background 0.2s;
 }
 
-.back-home-btn:hover {
-  background: #1d4ed8;
-}
+.back-home-btn:hover { background: #1d4ed8; }

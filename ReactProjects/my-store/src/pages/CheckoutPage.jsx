@@ -11,7 +11,7 @@ function CheckoutPage() {
   const [step, setStep] = useState(1)
   const [errors, setErrors] = useState({})
   const [shipping, setShipping] = useState({ fullName: '', email: '', address: '', city: '', zipCode: '' })
-  const [payment, setPayment] = useState({ cardNumber: '', expiry: '', cvv: '' })
+  const [payment, setPayment] = useState({ method: '', cardNumber: '', expiry: '', cvv: '', upiId: '', bank: '' })
   const [orderId, setOrderId] = useState('')
 
   function updateShipping(field, value) { setShipping(prev => ({ ...prev, [field]: value })) }
@@ -24,15 +24,19 @@ function CheckoutPage() {
     else if (!/\S+@\S+\.\S+/.test(shipping.email)) e.email = 'Enter a valid email'
     if (!shipping.address.trim()) e.address = 'Address is required'
     if (!shipping.city.trim()) e.city = 'City is required'
-    if (!shipping.zipCode.trim()) e.zipCode = 'ZIP code is required'
+    if (!shipping.zipCode.trim()) e.zipCode = 'PIN code is required'
     return e
   }
 
   function validatePayment() {
     const e = {}
-    if (payment.cardNumber.replace(/\s/g, '').length !== 16) e.cardNumber = 'Card must be 16 digits'
-    if (!/^\d{2}\/\d{2}$/.test(payment.expiry)) e.expiry = 'Use MM/YY format'
-    if (payment.cvv.length < 3) e.cvv = 'CVV must be 3 digits'
+    if (!payment.method) { e.method = 'Please select a payment method'; return e }
+    if (payment.method === 'card') {
+      if (!payment.cardNumber || payment.cardNumber.replace(/\s/g, '').length !== 16) e.cardNumber = 'Card must be 16 digits'
+      if (!payment.expiry || !/^\d{2}\/\d{2}$/.test(payment.expiry)) e.expiry = 'Use MM/YY format'
+      if (!payment.cvv || payment.cvv.length < 3) e.cvv = 'CVV must be 3 digits'
+    }
+    if (payment.method === 'upi' && !payment.upiId) e.upiId = 'Please enter your UPI ID'
     return e
   }
 
@@ -48,7 +52,7 @@ function CheckoutPage() {
     if (Object.keys(e).length > 0) { setErrors(e); return }
     const id = Math.random().toString(36).substr(2, 9).toUpperCase()
     setOrderId(id)
-    const order = { id, items: cart, total: cartTotal, shipping, date: new Date().toLocaleDateString() }
+    const order = { id, items: cart, total: cartTotal, shipping, payment: { method: payment.method }, date: new Date().toLocaleDateString() }
     const existing = JSON.parse(localStorage.getItem('orders') || '[]')
     localStorage.setItem('orders', JSON.stringify([...existing, order]))
     clearCart()
@@ -75,6 +79,10 @@ function CheckoutPage() {
           <div className="order-id-box">
             <span>Order ID</span>
             <strong>#{orderId}</strong>
+          </div>
+          <div className="order-id-box" style={{ marginTop: '0.5rem' }}>
+            <span>Payment</span>
+            <strong>{payment.method === 'cod' ? 'Cash on Delivery' : payment.method === 'upi' ? 'UPI' : payment.method === 'netbanking' ? 'Net Banking' : 'Card'}</strong>
           </div>
           <p className="confirmation-email">Confirmation sent to <strong>{shipping.email}</strong></p>
           <button className="back-home-btn" onClick={() => navigate('/')}>Continue Shopping</button>
@@ -138,28 +146,101 @@ function CheckoutPage() {
 
           {step === 2 && (
             <div className="form-section">
-              <h3>Payment Details</h3>
-              <p className="test-note">💳 Use any 16-digit number for testing</p>
-              <div className="form-group">
-                <label>Card Number</label>
-                <input className={`form-input ${errors.cardNumber ? 'input-error' : ''}`} placeholder="1234 5678 9012 3456" value={payment.cardNumber} onChange={e => handleCardInput(e.target.value)} />
-                {errors.cardNumber && <span className="error-msg">{errors.cardNumber}</span>}
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Expiry Date</label>
-                  <input className={`form-input ${errors.expiry ? 'input-error' : ''}`} placeholder="MM/YY" value={payment.expiry} onChange={e => handleExpiryInput(e.target.value)} />
-                  {errors.expiry && <span className="error-msg">{errors.expiry}</span>}
+              <h3>Payment Method</h3>
+
+              <div className="payment-methods">
+                <div className={`payment-option ${payment.method === 'cod' ? 'selected' : ''}`} onClick={() => updatePayment('method', 'cod')}>
+                  <span className="payment-icon">💵</span>
+                  <div>
+                    <p className="payment-name">Cash on Delivery</p>
+                    <p className="payment-desc">Pay when your order arrives</p>
+                  </div>
+                  <div className="payment-radio">{payment.method === 'cod' ? '🔵' : '⚪'}</div>
                 </div>
-                <div className="form-group">
-                  <label>CVV</label>
-                  <input className={`form-input ${errors.cvv ? 'input-error' : ''}`} placeholder="123" maxLength={3} value={payment.cvv} onChange={e => updatePayment('cvv', e.target.value.replace(/\D/g, ''))} />
-                  {errors.cvv && <span className="error-msg">{errors.cvv}</span>}
+
+                <div className={`payment-option ${payment.method === 'upi' ? 'selected' : ''}`} onClick={() => updatePayment('method', 'upi')}>
+                  <span className="payment-icon">📱</span>
+                  <div>
+                    <p className="payment-name">UPI</p>
+                    <p className="payment-desc">GPay, PhonePe, Paytm, BHIM</p>
+                  </div>
+                  <div className="payment-radio">{payment.method === 'upi' ? '🔵' : '⚪'}</div>
+                </div>
+
+                <div className={`payment-option ${payment.method === 'netbanking' ? 'selected' : ''}`} onClick={() => updatePayment('method', 'netbanking')}>
+                  <span className="payment-icon">🏦</span>
+                  <div>
+                    <p className="payment-name">Net Banking</p>
+                    <p className="payment-desc">All major banks supported</p>
+                  </div>
+                  <div className="payment-radio">{payment.method === 'netbanking' ? '🔵' : '⚪'}</div>
+                </div>
+
+                <div className={`payment-option ${payment.method === 'card' ? 'selected' : ''}`} onClick={() => updatePayment('method', 'card')}>
+                  <span className="payment-icon">💳</span>
+                  <div>
+                    <p className="payment-name">Credit / Debit Card</p>
+                    <p className="payment-desc">Visa, Mastercard, RuPay</p>
+                  </div>
+                  <div className="payment-radio">{payment.method === 'card' ? '🔵' : '⚪'}</div>
                 </div>
               </div>
-              <div className="btn-row">
+
+              {errors.method && <span className="error-msg" style={{ marginTop: '0.5rem', display: 'block' }}>{errors.method}</span>}
+
+              {payment.method === 'upi' && (
+                <div className="form-group" style={{ marginTop: '1rem' }}>
+                  <label>UPI ID</label>
+                  <input className={`form-input ${errors.upiId ? 'input-error' : ''}`} placeholder="yourname@paytm / @gpay / @ybl" value={payment.upiId} onChange={e => updatePayment('upiId', e.target.value)} />
+                  {errors.upiId && <span className="error-msg">{errors.upiId}</span>}
+                </div>
+              )}
+
+              {payment.method === 'netbanking' && (
+                <div className="form-group" style={{ marginTop: '1rem' }}>
+                  <label>Select Bank</label>
+                  <select className="form-input" value={payment.bank} onChange={e => updatePayment('bank', e.target.value)}>
+                    <option value="">Choose your bank</option>
+                    <option>State Bank of India</option>
+                    <option>HDFC Bank</option>
+                    <option>ICICI Bank</option>
+                    <option>Axis Bank</option>
+                    <option>Kotak Mahindra Bank</option>
+                    <option>Punjab National Bank</option>
+                    <option>Bank of Baroda</option>
+                    <option>Canara Bank</option>
+                  </select>
+                </div>
+              )}
+
+              {payment.method === 'card' && (
+                <div style={{ marginTop: '1rem' }}>
+                  <p className="test-note">💳 Test mode — use any 16-digit number</p>
+                  <div className="form-group">
+                    <label>Card Number</label>
+                    <input className={`form-input ${errors.cardNumber ? 'input-error' : ''}`} placeholder="1234 5678 9012 3456" value={payment.cardNumber} onChange={e => handleCardInput(e.target.value)} />
+                    {errors.cardNumber && <span className="error-msg">{errors.cardNumber}</span>}
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Expiry Date</label>
+                      <input className={`form-input ${errors.expiry ? 'input-error' : ''}`} placeholder="MM/YY" value={payment.expiry} onChange={e => handleExpiryInput(e.target.value)} />
+                      {errors.expiry && <span className="error-msg">{errors.expiry}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>CVV</label>
+                      <input className={`form-input ${errors.cvv ? 'input-error' : ''}`} placeholder="123" maxLength={3} value={payment.cvv} onChange={e => updatePayment('cvv', e.target.value.replace(/\D/g, ''))} />
+                      {errors.cvv && <span className="error-msg">{errors.cvv}</span>}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="btn-row" style={{ marginTop: '1.5rem' }}>
                 <button className="back-btn" onClick={() => { setStep(1); setErrors({}) }}>← Back</button>
-                <button className="place-order-btn" onClick={handlePlaceOrder}>Place Order</button>
+                <button className="place-order-btn" onClick={handlePlaceOrder}>
+                  {payment.method === 'cod' ? '✅ Place Order (COD)' : '🔒 Place Order'}
+                </button>
               </div>
             </div>
           )}
