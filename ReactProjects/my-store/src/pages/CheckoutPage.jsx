@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCart } from '../contexts/CartContext'
 import './CheckoutPage.css'
 
-const formatPrice = (usd) => `₹${(usd * 83).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+const formatPrice = (price) => `₹${Number(price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 
 function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart()
