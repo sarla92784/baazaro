@@ -1,46 +1,73 @@
 import { Link } from 'react-router-dom'
-import { useCart } from '../../contexts/CartContext'
-import './ProductCard.css'
+import { useCart } from '../contexts/CartContext'
+import './CartPage.css'
 
-function ProductCard({ product }) {
-  const { addToCart } = useCart()
+const formatPrice = (price) => `₹${Number(price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+
+function CartPage() {
+  const { cart, cartTotal, removeFromCart, updateQuantity } = useCart()
+
+  if (cart.length === 0) {
+    return (
+      <div className="empty-cart">
+        <p className="empty-cart-icon">🛒</p>
+        <h2>Your cart is empty</h2>
+        <p>Add some products to get started</p>
+        <Link to="/" className="continue-btn">Continue Shopping</Link>
+      </div>
+    )
+  }
 
   return (
-    <div className="product-card">
+    <div className="cart-page">
+      <h2 className="cart-title">Your Cart ({cart.length} items)</h2>
 
-      <Link to={`/product/${product.id}`}>
-        <div className="product-image-wrapper">
-          <img
-            src={product.image}
-            alt={product.title}
-            className="product-image"
-            loading="lazy"
-          />
+      <div className="cart-layout">
+        <div className="cart-items">
+          {cart.map(item => (
+            <div key={item.id} className="cart-item">
+              <img src={item.image} alt={item.title} className="cart-item-image" />
+
+              <div className="cart-item-details">
+                <p className="cart-item-title">{item.title}</p>
+                <p className="cart-item-price">{formatPrice(item.price)}</p>
+
+                <div className="quantity-controls">
+                  <button className="qty-btn" onClick={() => updateQuantity(item.id, item.quantity - 1)}>−</button>
+                  <span className="qty-number">{item.quantity}</span>
+                  <button className="qty-btn" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                </div>
+              </div>
+
+              <div className="cart-item-right">
+                <p className="cart-item-subtotal">{formatPrice(item.price * item.quantity)}</p>
+                <button className="remove-btn" onClick={() => removeFromCart(item.id)}>Remove</button>
+              </div>
+            </div>
+          ))}
         </div>
-      </Link>
 
-      <div className="product-info">
-        <p className="product-category">{product.category}</p>
-        <h3 className="product-title">{product.title}</h3>
-
-        <div className="product-rating">
-          <span className="stars">{'★'.repeat(Math.round(product.rating.rate))}{'☆'.repeat(5 - Math.round(product.rating.rate))}</span>
-          <span className="rating-count">({product.rating.count})</span>
-        </div>
-
-        <div className="product-footer">
-          <span className="product-price">₹{(product.price * 83).toFixed(0)}</span>
-          <button
-            className="add-to-cart-btn"
-            onClick={() => addToCart(product)}
-          >
-            Add to Cart
-          </button>
+        <div className="cart-summary">
+          <h3 className="summary-title">Order Summary</h3>
+          <div className="summary-row">
+            <span>Subtotal</span>
+            <span>{formatPrice(cartTotal)}</span>
+          </div>
+          <div className="summary-row">
+            <span>Shipping</span>
+            <span className="free-shipping">Free</span>
+          </div>
+          <div className="summary-divider" />
+          <div className="summary-row total-row">
+            <span>Total</span>
+            <span>{formatPrice(cartTotal)}</span>
+          </div>
+          <Link to="/checkout" className="checkout-btn">Proceed to Checkout</Link>
+          <Link to="/" className="keep-shopping-btn">Continue Shopping</Link>
         </div>
       </div>
-
     </div>
   )
 }
 
-export default ProductCard
+export default CartPage
