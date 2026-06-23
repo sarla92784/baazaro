@@ -2,7 +2,7 @@
 
 A fully functional e-commerce application built as a capstone project using React, Supabase, and modern web technologies.
 
-🔗 **Live Demo:** https://dreamy-bienenstitch-0aff74.netlify.app
+🔗 **Live Demo:** https://baazaro.netlify.app/
 
 ---
 
